@@ -688,26 +688,67 @@ Click Create Bucket to Create a new bucket with the name user_profile having a m
 
 ### Connecting App to our Bucket
 
- Before we connect our app to our bucket with you need to do 2 things. Add our IP address to the Capella List and create the credentials to access our database.
+Before we connect our app to our bucket with you need to do 2 things. Add our IP address to the Capella List and create the credentials to access our database.
 
- Step 1: Go to connect tab in navigation
+Step 1: Go to connect tab in navigation
 
- ![cred](/images/cred.png)
+![cred](/images/cred.png)
 
- Step 2 : If u already have an IP adress create a database access credentials as shown in the image by specifiying the username and password.
+Step 2 :  To Create an Permanent IP address click on the Allowed IP address as shown and then click
+on Add Allowed IP button to create an Permanent IP. 
 
- ![cred](/images/cred2.png)
+![cred](/images/cred4.png)
 
- ![cred](/images/cred1.png)
+![cred](/images/cred5.png)
 
- ### Connecting App from locally to Cluster
+Step 3 :  create a database access credentials as shown in the image by specifiying the username and password.
 
-step 1 : Connecting App from locally to Cluster using Springboot
+![cred](/images/cred2.png)
 
-Go to the link https://github.com/couchbase-examples 
-
-
-
+![cred](/images/cred1.png)
 
 
+### Connecting App from locally to Cluster
 
+Step 1 : Connecting App from locally to Cluster using Springboot
+
+* Go to the link https://github.com/couchbase-examples and select the java-springboot-quickstart
+and Clone the Project locally in a folder. 
+
+* Open the Project in STS and open Application.properties
+
+Step 2 : Open the Application.properties and add the capella credentials as shown in the image
+
+![host](/images/host1.png)
+
+Step 3 : Run the Application file in the src/main/java then u will get an following output of Swagger-ui.
+
+![host](/images/host2.png)
+
+### Adding user 
+
+* Expand the profile Controller in swagger output and click on try-it-out to add user  and Execute.
+
+![user](/images/user.png)
+
+* One can see that the Profile details we added is stored in user profile collection in the profileController.java file.
+
+![user](/images/user1.png)
+
+* Go to Capella and run the Query to ensure that the user has been added to the database.
+
+![user](/images/user3.png)
+
+### Add Collections
+
+* Go to Buckets and click on the Bucket(user_profile) you have created.
+
+![col](/images/col2.png)
+
+* Click on the default scope or you can create an scope if you want.
+
+![col](/images/col3.png)
+
+* Click on the create collection and give the collection name which youu want to give
+
+![col](/images/col5.png)
