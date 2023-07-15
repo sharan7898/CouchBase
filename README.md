@@ -911,6 +911,10 @@ The **-default.%myCollectionName%** defines the collection name will be the valu
 
 * Click next for Configurations page click next and Click import for the Importing data.
 
+* Execute the Query once the import has been done for the imported data.
+
+![import](/images/import8.png)
+
 
 
 
