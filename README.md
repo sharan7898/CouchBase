@@ -607,6 +607,59 @@ Couchbase provides several services that work together to offer a comprehensive 
 
 **Management Service**:The Management Service encompasses various administrative and management features in Couchbase. It provides tools and interfaces for cluster management, configuration, monitoring, and troubleshooting. The Management Service includes the Couchbase Web Console, command-line interface (CLI), REST API, and SDKs for programmatic management and automation.
 
+## Query
+
+* The Query Service supports the querying of data by means of the SQL++ query language.
+
+* As its primary function, the Query service enables you to issue queries to extract data from Couchbase server. 
+
+* You can also issue queries for data definition (defining indexes) and data manipulation (adding or deleting data). The Query Service depends on both the Index Service and the Data Service.
+
+* To issue queries, you can use a Couchbase SDK, the REST API, or the tools provided by the Query service: the cbq shell or the Query workbench.
+
+### Example for retreiving data
+
+* Go to Query in the side-menu bar and execute the retreival of the data from the travel-sample Bucket.
+
+```
+
+SELECT airline, destinationairport, schedule
+FROM `travel-sample`
+WHERE type = "route" AND sourceairport = "LAX"
+LIMIT 10
+
+
+```
+
+
+* This query retrieves the airline, destinationairport, and schedule fields from documents in the travel-sample dataset. 
+
+* It filters the documents by type equal to "route" and sourceairport equal to "LAX". 
+
+* The LIMIT clause limits the result to 10 documents.
+
+![query](/images/query.png)
+
+**Example2**
+
+```
+
+SELECT hotel.name, hotel.address, hotel.country
+FROM `travel-sample`.inventory.hotel
+WHERE type = "hotel" AND country = "France"
+LIMIT 5
+
+
+```
+
+* This query retrieves the name, address, and country fields from documents in the travel-sample dataset's inventory bucket, specifically from the hotel collection. 
+
+* It filters the documents by type equal to "hotel" and country equal to "France". 
+
+* The LIMIT clause restricts the result to 5 documents.
+
+![query](/images/query2.png)
+
 ## CouchBase Capella
 
 **Capella Overview**
