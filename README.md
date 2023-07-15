@@ -749,6 +749,169 @@ Step 3 : Run the Application file in the src/main/java then u will get an follow
 
 ![col](/images/col3.png)
 
-* Click on the create collection and give the collection name which youu want to give
+* Click on the create collection and give the collection name which you want to give
 
 ![col](/images/col5.png)
+
+### Adding Index
+
+* Lets create an Index for a Collection, its a mandatory process in order to query the data
+
+* Go to Query tab and execute the following Query 
+
+![index](/images/index.png)
+
+* Here you are creating an index for a product collection in the Scope for a Bucket user_profile.
+
+* onceu execute the Query the index will be created.
+
+![index](/images/index1.png)
+
+### Creating an Entity
+
+In Couchbase, an "entity" refers to a document or object that you want to store and manage within a bucket. It represents a piece of data that you want to persist in Couchbase.
+
+* Go to STS and create a new class in the model called Product.
+
+![entity](/images/entity.png)
+
+* Create two attributes called pid and name and generate getter and setter methods.
+
+![entity](/images/entity2.png)
+
+* Copy the ProfileController in the controller and then paste it as a ProductController
+
+* Change the Request mapping url to product
+
+![entity](/images/entity3.png)
+
+```
+
+package org.couchbase.quickstart.controllers;
+
+import static org.couchbase.quickstart.configs.CollectionNames.PRODUCT;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import com.couchbase.client.core.error.DocumentNotFoundException;
+import com.couchbase.client.core.msg.kv.DurabilityLevel;
+import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.Cluster;
+import com.couchbase.client.java.Collection;
+import com.couchbase.client.java.json.JsonObject;
+import com.couchbase.client.java.query.QueryOptions;
+import com.couchbase.client.java.query.QueryScanConsistency;
+import com.couchbase.client.java.transactions.TransactionQueryOptions;
+import com.couchbase.client.java.transactions.config.TransactionOptions;
+
+import org.couchbase.quickstart.configs.DBProperties;
+import org.couchbase.quickstart.models.Product;
+import org.couchbase.quickstart.models.Profile;
+import org.couchbase.quickstart.models.ProfileRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
+@RestController
+@RequestMapping("/api/v1/product")
+public class ProductController {
+
+    private Cluster cluster;
+    private Collection profileCol;
+    private DBProperties dbProperties;
+    private Bucket bucket;
+
+    public ProductController(Cluster cluster, Bucket bucket, DBProperties dbProperties) {
+      System.out.println("Initializing profile controller, cluster: " + cluster + "; bucket: " + bucket);
+        this.cluster = cluster;
+        this.bucket = bucket;
+        this.profileCol = bucket.collection(PRODUCT);
+        this.dbProperties = dbProperties;
+    }
+
+
+    @CrossOrigin(value="*")
+    @PostMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Create a product from the request")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Created", response = Profile.class),
+            @ApiResponse(code = 400, message = "Bad request", response = Error.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = Error.class)
+    })
+    public ResponseEntity<Product> save(@RequestBody final Product product) {
+       
+
+        try {
+            profileCol.insert(product.getPid(), product);
+            return ResponseEntity.status(HttpStatus.CREATED).body(product);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+   
+}
+
+
+```
+
+U can copy the code and paste in the ProductController class.
+
+**Note:** Do not forget to create a collection named called product in the CollectionNames.java
+
+![entity](/images/entity5.png)
+
+* The OutPut will have a Product controller where u can post product details.Once u have posted u can query to see the results.
+
+![entity](/images/entity4.png)
+
+### Importing a data
+
+* One can Import the data of Json or CSV  format to the Bucket.
+
+* If we go to the dataset in src/main/resources one can find that the data consisting of 10 users and 1 product.Lets import this data in Capella.
+
+* Click on the import in the side-menu bar, and click import button to import your data 
+
+![import](/images/import1.png)
+
+* Select the Bucket and click next
+
+![import](/images/import2.png)
+
+* Select the File type as JSON and Format type as List and upload the document.
+
+![import](/images/import3.png)
+
+* Here Select as Custom Collection mapping.Enter the Collection Mapping Expression as **-default.%myCollectionName%** and in testing and mapping add one of the user collection for testing purposes.
+
+![import](/images/import4.png)
+
+The **-default.%myCollectionName%** defines the collection name will be the value of this my collection name attribute.
+
+* Select the Custom Generation as we have given key in the document and give the Key Name Generator Expression as **%pid%** and in testing and mapping add one of the user collection for testing purposes.
+
+![import](/images/import7.png)
+
+* Click next for Configurations page click next and Click import for the Importing data.
+
+
+
+
+
