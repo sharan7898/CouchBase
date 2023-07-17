@@ -660,6 +660,51 @@ LIMIT 5
 
 ![query](/images/query2.png)
 
+### Examples for modifying data
+
+```
+
+UPDATE `travel-sample`
+SET airline = "NewAirline"
+WHERE type = "route" AND sourceairport = "LAX"
+LIMIT 10
+
+```
+
+* This query modifies the airline field of documents in the travel-sample dataset. 
+
+* It updates the airline field to the value "NewAirline" for documents that match the condition type = "route" and sourceairport = "LAX". 
+
+* The LIMIT clause limits the modification to 10 documents.
+
+![query](/images/query3.png)
+
+* You Can Check in the documents  using N1QL for the Updated fields of airline to "NewAirline" using key_value pair.
+
+![query](/images/query4.png)
+
+### Examples for Aggregating data
+
+**Aggregating data**: N1QL supports aggregation functions like SUM, COUNT, MIN, MAX, and GROUP BY to perform calculations and summarize data from multiple documents.
+
+**Counting the number of documents in the travel bucket**
+
+```
+
+SELECT COUNT(*) AS total_documents
+FROM `travel-sample`
+
+
+```
+
+* This query calculates the total count of documents in the travel bucket and returns it as total_documents.
+
+![agg](/images/agg1.png)
+
+
+
+
+
 ## CouchBase Capella
 
 **Capella Overview**
@@ -934,6 +979,24 @@ U can copy the code and paste in the ProductController class.
 
 ![entity](/images/entity4.png)
 
+## Migration 
+
+* Data migration in Couchbase refers to the process of transferring data from one storage system or environment to another. 
+
+* It involves moving data from a source system, such as a relational database or another NoSQL database, to a Couchbase cluster. 
+
+* Data migration may also involve transferring data between different Couchbase clusters or upgrading to a newer version of Couchbase.
+
+Data migration in Couchbase can be achieved using various methods, including:
+
+**Couchbase SDKs**: Utilizing the programming language-specific Couchbase SDKs to read data from the source system and write it to Couchbase using appropriate data models and mapping.
+
+**Couchbase Import/Export Tools**: Leveraging the Couchbase Import/Export Tools, such as the cbimport and cbexport command-line tools, to migrate data in bulk from various file formats (JSON, CSV, etc.) or databases (MySQL, PostgreSQL, etc.) to Couchbase.
+
+**ETL (Extract, Transform, Load) Tools**: Employing third-party ETL tools, such as Apache NiFi, Talend, or Informatica, that offer Couchbase connectors to facilitate data migration and transformation processes.
+
+**Custom Scripts**: Writing custom scripts or programs using programming languages like Python, Java, or Go, to extract data from the source system, transform it if required, and load it into Couchbase.
+
 ### Importing a data
 
 * One can Import the data of Json or CSV  format to the Bucket.
@@ -967,6 +1030,7 @@ The **-default.%myCollectionName%** defines the collection name will be the valu
 * Execute the Query once the import has been done for the imported data.
 
 ![import](/images/import8.png)
+
 
 
 
