@@ -397,6 +397,18 @@ Here are some key points to understand about buckets in Couchbase:
 
 **NOTE**: It's important to note that the resources allocated to a bucket, such as memory quota, affect the overall resource usage of the Couchbase cluster. Therefore, it's crucial to plan and allocate resources wisely to ensure optimal performance and scalability
 
+### Bucket Types
+
+A maximum of 30 buckets can be created in a cluster. Each bucket must be specified as one of the following three types.
+
+* **Couchbase buckets**: These store data persistently, as well as in memory. They allow data to be automatically replicated for high availability, using the Database Change Protocol (DCP); and dynamically scaled across multiple clusters, by means of Cross Datacenter Replication (XDCR).
+
+* **Ephemeral buckets**: These are an alternative to Couchbase buckets, to be used whenever persistence is not required: for example, when repeated disk-access involves too much overhead. This allows highly consistent in-memory performance, without disk-based fluctuations. It also allows faster node rebalances and restarts.
+
+* **Memcached buckets**: These are now deprecated. Memcached buckets are designed to be used alongside other database platforms, such as ones employing relational database technology. By caching frequently-used data, Memcached buckets reduce the number of queries a database-server must perform. Each Memcached bucket provides a directly addressable, distributed, in-memory key-value cache.
+
+
+
 ### V Bucket
 
 In Couchbase, a vBucket (short for "Virtual Bucket") is a partitioning mechanism used for distributing and managing data across the nodes in a Couchbase cluster. It is a logical representation of data partitioning within the cluster.
@@ -606,6 +618,169 @@ Couchbase provides several services that work together to offer a comprehensive 
 **Eventing Service**:The Eventing Service allows you to define and execute event-driven functions or business logic within Couchbase. It enables you to create functions that respond to changes in the data, such as document mutations, and trigger custom operations. The Eventing Service integrates with other Couchbase services and provides a flexible and extensible way to build reactive and event-driven applications.
 
 **Management Service**:The Management Service encompasses various administrative and management features in Couchbase. It provides tools and interfaces for cluster management, configuration, monitoring, and troubleshooting. The Management Service includes the Couchbase Web Console, command-line interface (CLI), REST API, and SDKs for programmatic management and automation.
+
+## SQL vs SQL++
+
+The most important difference between SQL++ and SQL is the data model. Other notable differences relate to the projection, selection, and filtering of data.
+
+**DATA MODEL**
+
+In a relational database, data is constrained to tables with uniform structure. The following example consists of two tables, Employee and Employers, with Name as the primary key.
+
+```
+
+EMPLOYEE:
+Name  | SSN | Wage
+-----------------------------------------------------------------------
+Jamie | 234 | 123
+Steve | 123 | 456
+
+SCHEMA:
+Name -> String of width 100
+SSN -> Number of width 9
+Wage -> Number of width 10
+
+EMPLOYERS:
+-----------------------------------------------------------------------
+ Name_Key  | Company   | Start | End
+ Jamie     | Yahoo     | 2005  | 2006
+ Jamie     | Oracle    | 2006  | 2012
+ Jamie     | Couchbase | 2012  | NULL
+
+ 
+
+```
+
+By contrast, SQL++ handles data as free-form documents, gathered into large collections called keyspaces. There is no uniformity; nor is there any logical proximity shared by objects of the same data shape within the keyspace. The relational data from the above example might therefore appear as follows:
+
+```
+
+(HRData keyspace)
+ {
+     'Name': 'Jamie'
+     'SSN': 234
+     'Wage': 123
+     'History':
+      [
+       ['Yahoo', 2005, 2006],
+       ['Oracle', 2006, 2012],
+     ]
+ },
+
+ {
+     'Name': Steve
+     'SSN':  123,
+     'Wage': 456,
+ }
+
+```
+
+#### Data Projection
+
+In a relational database, when an SQL query is run, a set of rows is returned; each row consisting of one or more columns, and the columns being the same for each row. A header can be retrieved, to obtain metadata about each column. The SQL projection may also contain arbitrary expressions, which are returned as fields in the result set.
+
+Query:
+
+```
+
+SELECT Name, Company
+    FROM Employee, Employers
+    WHERE Name_Key = Name
+
+```
+
+```
+
+Result:
+	Name  | Company
+	----------------
+	Jamie | Oracle
+	Jamie | Yahoo
+	Jamie | Couchbase
+	----------------
+
+```
+
+With SQL++, an arbitrary expression in the projection may contain collection operators or construction operators, which enable you to reshape the data in ways that go beyond merely adding an extra field. Like SQL, SQL++ allows fields to be renamed using the AS keyword.
+
+Query:
+
+```
+
+ SELECT Name, History, {'FullTime': true} AS 'Status'
+      FROM HRData
+
+```
+
+```
+
+Result:
+	{
+	'Name': 'Jamie',
+	'History':
+		[
+		['Yahoo', 2005, 2006],
+		['Oracle', 2006, 2012],
+		['Couchbase', 2012, null]
+		],
+	'Status': { 'FullTime': true }
+	}
+	{
+	'Name': 'Steve',
+	'Status': { 'FullTime': true }
+	}
+
+```
+
+#### Data Selection
+
+In SQL++, the FROM clause is used to select between data sources (keyspaces). If HRData is a keyspace, the following statement selects the Name attribute from all documents in the HRData keyspace that have a Name attribute defined.
+
+```
+
+SELECT Name FROM HRData
+
+```
+
+
+Each document can also regard itself as a data source, and run a query over its nested elements. Such nested elements are addressed using the dot (.) operator to descend a level, and the square-bracket ( [ ] ) operator to index into an array element.
+
+```
+
+  SELECT FullTime FROM HRData.Status
+{
+     'FullTime': true
+}
+
+```
+
+The selected fields can also be renamed using the AS operator, as in SQL:
+
+```
+
+SELECT firstjob FROM HRData.History[0] AS firstjob
+{
+     'firstjob': ['Yahoo', 2005, 2006]
+}
+
+SELECT firstjob[2] FROM HRData.History[0] AS firstjob
+{
+     'firstjob[2]': 2006
+}
+
+```
+
+#### Data Filtering
+
+SQL++ supports the WHERE clause, but with slight differences from SQL.
+
+Similarly to SQL, the dot ( . ) and the square bracket ( [] ) operators can be used to access nested elements as they are used in SELECT clauses.
+
+SQL++ data can be irregularly shaped: hence, undefined values are recognized as distinct from null. SQL++ provides a complementary set of operators like IS MISSING, in addition to standard operators like IS NULL. New conversions, for example from non-zero integer-values to Boolean value true, are also supported.
+
+Most standard SQL functions (for example, LOWER()) are defined. In addition to the standard filtering-predicates, SQL++ provides new operators to work with arrays in documents: ANY, SOME, and EVERY. ANY and SOME evaluate a condition for each element, and return true if any element meets the condition. EVERY also evaluates a condition for each element; except that it returns true only if all elements matched the condition.
+
+
 
 ## Query
 
@@ -979,24 +1154,6 @@ U can copy the code and paste in the ProductController class.
 
 ![entity](/images/entity4.png)
 
-## Migration 
-
-* Data migration in Couchbase refers to the process of transferring data from one storage system or environment to another. 
-
-* It involves moving data from a source system, such as a relational database or another NoSQL database, to a Couchbase cluster. 
-
-* Data migration may also involve transferring data between different Couchbase clusters or upgrading to a newer version of Couchbase.
-
-Data migration in Couchbase can be achieved using various methods, including:
-
-**Couchbase SDKs**: Utilizing the programming language-specific Couchbase SDKs to read data from the source system and write it to Couchbase using appropriate data models and mapping.
-
-**Couchbase Import/Export Tools**: Leveraging the Couchbase Import/Export Tools, such as the cbimport and cbexport command-line tools, to migrate data in bulk from various file formats (JSON, CSV, etc.) or databases (MySQL, PostgreSQL, etc.) to Couchbase.
-
-**ETL (Extract, Transform, Load) Tools**: Employing third-party ETL tools, such as Apache NiFi, Talend, or Informatica, that offer Couchbase connectors to facilitate data migration and transformation processes.
-
-**Custom Scripts**: Writing custom scripts or programs using programming languages like Python, Java, or Go, to extract data from the source system, transform it if required, and load it into Couchbase.
-
 ### Importing a data
 
 * One can Import the data of Json or CSV  format to the Bucket.
@@ -1031,8 +1188,126 @@ The **-default.%myCollectionName%** defines the collection name will be the valu
 
 ![import](/images/import8.png)
 
+## Migration 
+
+* Data migration in Couchbase refers to the process of transferring data from one storage system or environment to another. 
+
+* It involves moving data from a source system, such as a relational database or another NoSQL database, to a Couchbase cluster. 
+
+* Data migration may also involve transferring data between different Couchbase clusters or upgrading to a newer version of Couchbase.
+
+Data migration in Couchbase can be achieved using various methods, including:
+
+**Couchbase SDKs**: Utilizing the programming language-specific Couchbase SDKs to read data from the source system and write it to Couchbase using appropriate data models and mapping.
+
+**Couchbase Import/Export Tools**: Leveraging the Couchbase Import/Export Tools, such as the cbimport and cbexport command-line tools, to migrate data in bulk from various file formats (JSON, CSV, etc.) or databases (MySQL, PostgreSQL, etc.) to Couchbase.
+
+**ETL (Extract, Transform, Load) Tools**: Employing third-party ETL tools, such as Apache NiFi, Talend, or Informatica, that offer Couchbase connectors to facilitate data migration and transformation processes.
+
+**Custom Scripts**: Writing custom scripts or programs using programming languages like Python, Java, or Go, to extract data from the source system, transform it if required, and load it into Couchbase.
+
+### Migration using Import/Export Tools
+
+To perform data migration using the Couchbase CLI tools within the container, you can use the cbimport command. This command allows you to import data from various sources into Couchbase.
+
+Examples: 
+
+* Ensure you have the data you want to migrate in a suitable format (e.g., JSON, CSV, or other supported formats).
+
+* Copy the data file to the Docker container where you have the Couchbase CLI tools installed. You can use the docker cp command to copy the file from your local machine to the container. 
+
+Note: Couchbase-Cli-tools are pre-installed in the server7.2 version.You can download and copy the CLI
+tools using the following link. https://docs.couchbase.com/server/current/cli/cli-intro.html
+
+```
+
+docker cp data.json my-couchbase-container:/data.json
+
+
+```
+
+Replace data.json with the actual filename and my-couchbase-container with the name or ID of your Couchbase container.
+
+![mig](/images/migration.png)
+
+* **Access the terminal of the Docker container**
+
+```
+
+docker exec -it my-couchbase-container bash
+
+```
+
+Replace my-couchbase-container with the name or ID of your Couchbase container.
 
 
 
+* **Use the cbimport command to migrate the data**
 
+```
+
+/opt/couchbase/bin/cbimport json -c couchbase://127.0.0.1 -u Administrator -p couchbase -b Migration -d file:///user.json -f list --generator-delimiter '\t' -g key::%pid%#UUID# -t 4
+
+
+```
+
+![mig](/images/migration2.png)
+
+**Note:** The field name is present in some documents but missing in others.
+To import this JSON data into Couchbase using the cbimport command, you can modify the key generation flag to use a combination of fields that are present in all the documents, such as pid. Here's an example command:
+
+
+* /opt/couchbase/bin/cbimport: This is the command to run the cbimport tool in the Couchbase container.
+
+* json: Specifies the format of the data being imported, which is JSON in this case.
+
+* -c couchbase://127.0.0.1: Specifies the connection URL to the Couchbase server.
+
+* -u Administrator -p couchbase: Specifies the username and password to authenticate with the Couchbase server. Adjust these values according to your Couchbase setup.
+
+* -b Migration: Specifies the target bucket where the data will be imported. Adjust the bucket name to match your desired bucket.
+
+* -d file:///user.json: Specifies the path to the JSON file containing the data to be imported. Adjust the file path accordingly.
+
+* -f list: Specifies that the input file contains a list of JSON objects.
+
+* --generator-delimiter '\t': Specifies the delimiter to be used when generating the document key. In this case, a tab character ('\t') is used as the delimiter.
+
+* -g key::%pid%#UUID#: Specifies the key generation format for each document. %pid% is the placeholder for the pid field value, and #UUID# generates a unique identifier for each document.
+
+* -t 4: Specifies the number of import threads to be used. Adjust this value based on the available system resources and desired import performance.
+
+* By running this modified command, the JSON data will be imported into the specified bucket, and a unique key will be generated for each document based on the pid field value.
+
+![mig](/images/migration3.png)
+
+**Exporting the data**
+
+To export data from a Couchbase bucket to a file, you can use the cbexport command-line tool. Here's an example command:
+
+```
+
+cbexport json -c couchbase://127.0.0.1 -u Administrator -p couchbase -b my-bucket -f lines -o /path/to/export.json
+
+```
+
+Explanation of the command:
+
+* json: Specifies the data format as JSON.
+
+* -c couchbase://127.0.0.1: Specifies the Couchbase connection URL.
+
+* -u Administrator: Specifies the username for authentication.
+
+* -p couchbase: Specifies the password for authentication.
+
+* -b my-bucket: Specifies the bucket name from which to export data.
+
+* -f lines: Specifies the format of the exported data as one JSON object per line.
+
+* -o /path/to/export.json: Specifies the output file path where the exported data will be saved.
+
+* Make sure to replace my-bucket with the actual name of your bucket, and provide the appropriate connection URL, username, password, and output file path.
+
+After running the command, the data from the specified bucket will be exported to the specified JSON file.
 
