@@ -1311,3 +1311,20 @@ Explanation of the command:
 
 After running the command, the data from the specified bucket will be exported to the specified JSON file.
 
+## CouchBase SDK's
+
+* Couchbase SDK (Software Development Kit) is a set of libraries and tools provided by Couchbase to interact with Couchbase Server and build applications that utilize its features. 
+
+* The SDKs provide a programming interface for various programming languages, allowing developers to connect to Couchbase Server, perform CRUD (Create, Read, Update, Delete) operations, query the data, and leverage other functionalities provided by Couchbase.
+
+* Couchbase SDKs are available for multiple programming languages, including Java, .NET, Node.js, Python, PHP, Go, and more. 
+
+* Each SDK provides language-specific APIs and client libraries that enable developers to integrate their applications with Couchbase.
+
+* The SDKs offer features like document and key-value operations, querying with N1QL (Couchbase's SQL-like query language), full-text search, analytics integration, eventing, and more. 
+
+* They handle the communication with the Couchbase Server cluster, provide efficient data access, and help developers build robust and scalable applications.
+
+* Using Couchbase SDKs, developers can leverage the power and flexibility of Couchbase Server and easily integrate it into their applications, making it easier to develop, deploy, and manage data-driven applications that require high-performance data storage, caching, and real-time data synchronization capabilities.
+
+For more information You can refer the official document: https://docs.couchbase.com/home/sdk.html
